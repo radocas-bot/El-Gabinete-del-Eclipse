@@ -9,9 +9,39 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Eclipse 3D" />
   <title>El Gabinete del Eclipse — Escape Room 3D</title>
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="manifest.json?v=3" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
+  <script>
+    (function () {
+      window.__SR_BOOT_ERRS = [];
+      function pushErr(msg) {
+        if (!msg) return;
+        if (window.__SR_BOOT_ERRS.indexOf(msg) === -1 && window.__SR_BOOT_ERRS.length < 8) {
+          window.__SR_BOOT_ERRS.push(String(msg));
+        }
+        if (typeof window.__SR_RENDER_BOOT_ERR === 'function') {
+          window.__SR_RENDER_BOOT_ERR();
+        }
+      }
+      window.addEventListener('error', function (e) {
+        if (e && e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+          var url = e.target.src || e.target.href || '';
+          pushErr('No se pudo cargar recurso: ' + url.replace(location.origin, ''));
+          return;
+        }
+        if (e && e.message) {
+          pushErr(e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function (e) {
+        var r = e && e.reason;
+        var m = (r && r.message) ? r.message : String(r || 'Error asíncrono');
+        if (m.indexOf('Fullscreen') !== -1 || m.indexOf('fullscreen') !== -1 || m.indexOf('AudioContext') !== -1) return;
+        pushErr('Promesa rechazada: ' + m);
+      });
+    })();
+  </script>
 </head>
 <body>
   <!-- 3D Viewport Container -->
@@ -272,32 +302,103 @@
   <script src="vendor/three-bundle.js"></script>
 
   <!-- Core Modules -->
-  <script src="src/core/state.js"></script>
-  <script src="src/core/audio.js"></script>
-  <script src="src/core/textures.js"></script>
-  <script src="src/core/materials.js"></script>
-  <script src="src/core/camera.js"></script>
+  <script src="src/core/state.js?v=3"></script>
+  <script src="src/core/audio.js?v=3"></script>
+  <script src="src/core/textures.js?v=3"></script>
+  <script src="src/core/materials.js?v=3"></script>
+  <script src="src/core/camera.js?v=3"></script>
 
   <!-- Room Architecture & Props -->
-  <script src="src/room/architecture.js"></script>
-  <script src="src/room/props.js"></script>
+  <script src="src/room/architecture.js?v=3"></script>
+  <script src="src/room/props.js?v=3"></script>
 
   <!-- Interactive 3D Puzzle Stations -->
-  <script src="src/room/stations/door.js"></script>
-  <script src="src/room/stations/clockBooks.js"></script>
-  <script src="src/room/stations/desk.js"></script>
-  <script src="src/room/stations/optics.js"></script>
-  <script src="src/room/stations/telemetry.js"></script>
-  <script src="src/room/stations/orrery.js"></script>
+  <script src="src/room/stations/door.js?v=3"></script>
+  <script src="src/room/stations/clockBooks.js?v=3"></script>
+  <script src="src/room/stations/desk.js?v=3"></script>
+  <script src="src/room/stations/optics.js?v=3"></script>
+  <script src="src/room/stations/telemetry.js?v=3"></script>
+  <script src="src/room/stations/orrery.js?v=3"></script>
 
   <!-- UI Systems -->
-  <script src="src/ui/hints.js"></script>
-  <script src="src/ui/journal.js"></script>
-  <script src="src/ui/inspector.js"></script>
-  <script src="src/ui/hud.js"></script>
-  <script src="src/ui/screens.js"></script>
+  <script src="src/ui/hints.js?v=3"></script>
+  <script src="src/ui/journal.js?v=3"></script>
+  <script src="src/ui/inspector.js?v=3"></script>
+  <script src="src/ui/hud.js?v=3"></script>
+  <script src="src/ui/screens.js?v=3"></script>
 
   <!-- Main Bootstrap -->
-  <script src="src/main.js"></script>
+  <script src="src/main.js?v=3"></script>
+
+  <!-- Error-Only Boot Diagnostic Guard (remains completely invisible unless a load/runtime error occurs) -->
+  <script>
+    (function () {
+      function showBootDiagnostic() {
+        var errs = window.__SR_BOOT_ERRS || [];
+        if (!errs.length) return;
+        var card = document.querySelector('#title-screen .title-card');
+        if (!card) return;
+        var box = document.getElementById('sr-boot-diag');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'sr-boot-diag';
+          box.style.cssText = 'margin-top:16px;padding:12px 14px;border-radius:10px;background:rgba(48,28,10,0.92);border:1px solid #f0ca78;color:#fce8b2;text-align:left;font-size:12.5px;line-height:1.45;';
+          card.appendChild(box);
+        }
+        var html = '<div style="font-weight:700;color:#ffd878;margin-bottom:6px;">⚠ Aviso de carga del servidor</div>';
+        html += '<ul style="margin:0 0 10px;padding-left:18px;word-break:break-word;">';
+        for (var i = 0; i < errs.length; i++) {
+          var safe = String(errs[i]).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          html += '<li>' + safe + '</li>';
+        }
+        html += '</ul>';
+        html += '<button id="btn-sr-clear-cache" type="button" class="brass-btn" style="height:34px;font-size:12px;width:100%;justify-content:center;">↻ Limpiar caché y recargar</button>';
+        box.innerHTML = html;
+        var btn = document.getElementById('btn-sr-clear-cache');
+        if (btn) {
+          btn.addEventListener('click', function () {
+            var tasks = [];
+            try {
+              if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+                tasks.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+                  return Promise.all(regs.map(function (r) { return r.unregister(); }));
+                }));
+              }
+            } catch (e) {}
+            try {
+              if ('caches' in window && caches.keys) {
+                tasks.push(caches.keys().then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                }));
+              }
+            } catch (e) {}
+            Promise.all(tasks).catch(function () {}).then(function () {
+              var base = location.href.split('?')[0].split('#')[0];
+              location.replace(base + '?r=' + Date.now());
+            });
+          });
+        }
+      }
+
+      window.__SR_RENDER_BOOT_ERR = showBootDiagnostic;
+      if (window.__SR_BOOT_ERRS && window.__SR_BOOT_ERRS.length) {
+        showBootDiagnostic();
+      }
+
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          if (!window.THREE) {
+            window.__SR_BOOT_ERRS.push('Motor 3D no cargado (verifica que vendor/three-bundle.js esté subido).');
+          }
+          if (!window.SR || !window.SR.Screens) {
+            window.__SR_BOOT_ERRS.push('Interfaz no inicializada (verifica la carpeta src/ui/ en el servidor).');
+          }
+          if (window.__SR_BOOT_ERRS.length) {
+            showBootDiagnostic();
+          }
+        }, 2500);
+      });
+    })();
+  </script>
 </body>
 </html>
