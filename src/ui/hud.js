@@ -449,7 +449,7 @@
           elBtnZenith.classList.toggle('active', isCenital);
           elBtnZenith.setAttribute('aria-pressed', isCenital ? 'true' : 'false');
           if (elBtnZenithIcon) elBtnZenithIcon.textContent = isCenital ? '↗' : '⬇';
-          if (elBtnZenithLabel) elBtnZenithLabel.textContent = isCenital ? 'Perspectiva' : 'Cenital';
+          if (elBtnZenithLabel) elBtnZenithLabel.textContent = isCenital ? 'Perspectiva' : 'Vista Cenital';
           elBtnZenith.title = isCenital
             ? 'Volver a vista en perspectiva'
             : 'Alternar vista cenital (desde arriba)';
