@@ -10,26 +10,33 @@
     clock: 'clockBooks',
     books: 'clockBooks',
     desk: 'desk',
+    desk_top: 'desk',
     chime: 'desk',
     mirror: 'desk',
     optics: 'optics',
+    optics_top: 'optics',
     starmap: 'optics',
     telemetry: 'telemetry',
     valves: 'telemetry',
     cipher: 'telemetry',
     safe: 'telemetry',
     orrery: 'orrery',
+    orrery_top: 'orrery',
     dome: 'dome'
   };
 
   let initialized = false;
   let dialogueTimer = null;
   let isTouchPointer = false;
+  let currentViewMeta = null;
 
   // Cached DOM references
   let elHud = null;
   let elCanvas = null;
   let elBtnBack = null;
+  let elBtnZenith = null;
+  let elBtnZenithIcon = null;
+  let elBtnZenithLabel = null;
   let elBtnTurnLeft = null;
   let elBtnTurnRight = null;
   let elCompassBtns = [];
@@ -200,6 +207,9 @@
       elHud = document.getElementById('hud');
       elCanvas = document.getElementById('game-canvas');
       elBtnBack = document.getElementById('btn-back');
+      elBtnZenith = document.getElementById('btn-zenith');
+      elBtnZenithIcon = elBtnZenith ? elBtnZenith.querySelector('.icon') : null;
+      elBtnZenithLabel = elBtnZenith ? elBtnZenith.querySelector('.label') : null;
       elBtnTurnLeft = document.getElementById('btn-turn-left');
       elBtnTurnRight = document.getElementById('btn-turn-right');
       elCompassBtns = Array.prototype.slice.call(
@@ -237,6 +247,18 @@
           if (SR.Audio) SR.Audio.playClick(0.92);
           if (SR.Camera && typeof SR.Camera.goBack === 'function') {
             SR.Camera.goBack();
+          }
+        });
+      }
+
+      if (elBtnZenith) {
+        elBtnZenith.addEventListener('click', function () {
+          if (!currentViewMeta) return;
+          const targetView = currentViewMeta.zenithView || currentViewMeta.perspectiveView;
+          if (!targetView) return;
+          if (SR.Audio) SR.Audio.playClick(1.1);
+          if (SR.Camera && typeof SR.Camera.goToView === 'function') {
+            SR.Camera.goToView(targetView, false);
           }
         });
       }
@@ -412,9 +434,29 @@
 
     updateView: function (viewId, viewMeta) {
       const isRoom = !viewId || viewId === 'room';
+      currentViewMeta = viewMeta || null;
 
       if (elBtnBack) {
         elBtnBack.classList.toggle('hidden', isRoom);
+      }
+      if (elBtnZenith) {
+        const hasZenith = !!(viewMeta && viewMeta.zenithView);
+        const hasPerspective = !!(viewMeta && viewMeta.perspectiveView);
+        const showToggle = !isRoom && (hasZenith || hasPerspective);
+        elBtnZenith.classList.toggle('hidden', !showToggle);
+        if (showToggle) {
+          const isCenital = hasPerspective && !hasZenith;
+          elBtnZenith.classList.toggle('active', isCenital);
+          elBtnZenith.setAttribute('aria-pressed', isCenital ? 'true' : 'false');
+          if (elBtnZenithIcon) elBtnZenithIcon.textContent = isCenital ? '↗' : '⬇';
+          if (elBtnZenithLabel) elBtnZenithLabel.textContent = isCenital ? 'Perspectiva' : 'Cenital';
+          elBtnZenith.title = isCenital
+            ? 'Volver a vista en perspectiva'
+            : 'Alternar vista cenital (desde arriba)';
+        } else {
+          elBtnZenith.classList.remove('active');
+          elBtnZenith.setAttribute('aria-pressed', 'false');
+        }
       }
       if (elBtnTurnLeft) {
         elBtnTurnLeft.classList.toggle('hidden', !isRoom);

@@ -671,7 +671,18 @@
         fov: 50,
         title: 'Escritorio del Maestro',
         subtitle: 'Explora el diario, el catalejo, el espejo horológico y la caja de resonancia',
-        parent: 'room'
+        parent: 'room',
+        zenithView: 'desk_top'
+      });
+
+      SR.Camera.registerView('desk_top', {
+        pos: toWorld(group, 0.0, 2.62, 0.83),
+        target: toWorld(group, 0.0, 0.80, 0.75),
+        fov: 50,
+        title: 'Escritorio — Vista Cenital',
+        subtitle: 'Vista superior del escritorio, caja de resonancia y cajón secreto',
+        parent: 'room',
+        perspectiveView: 'desk'
       });
 
       SR.Camera.registerView('chime', {
@@ -886,7 +897,7 @@
       SR.registerInteractive(lg, {
         id: 'desk_banker_lamp',
         station: 'desk',
-        activeViews: ['desk'],
+        activeViews: ['desk', 'desk_top'],
         action: 'Encender / Apagar',
         label: 'Lámpara de Banquero',
         cursor: 'interact',
@@ -1013,7 +1024,7 @@
       SR.registerInteractive(dg, {
         id: 'desk_diary',
         station: 'desk',
-        activeViews: ['desk'],
+        activeViews: ['desk', 'desk_top'],
         action: 'Leer Diario',
         label: 'Diario Abierto de Valerio',
         cursor: 'inspect',
@@ -1039,7 +1050,7 @@
       const cfg = {
         id: 'desk_telescope',
         station: 'desk',
-        activeViews: ['desk'],
+        activeViews: ['desk', 'desk_top'],
         action: 'Recoger',
         label: 'Catalejo de Latón',
         cursor: 'interact',
@@ -1099,11 +1110,11 @@
       mirrorFace.position.z = 0.014;
       plaqueHolder.add(mirrorFace);
 
-      // Clicking in 'desk' zooms in to 'mirror' AND records journal clue
+      // Clicking in 'desk' or 'desk_top' zooms in to 'mirror' AND records journal clue
       SR.registerInteractive(plaqueHolder, {
         id: 'desk_mirror',
         station: 'desk',
-        activeViews: ['desk', 'mirror'],
+        activeViews: ['desk', 'desk_top', 'mirror'],
         action: 'Examinar Espejo',
         label: 'Espejo Horológico del Eclipse',
         cursor: 'inspect',
@@ -1239,7 +1250,7 @@
         SR.registerInteractive(keyGroup, {
           id: 'desk_chime_key_' + i,
           station: 'desk',
-          activeViews: ['chime'],
+          activeViews: ['chime', 'desk_top'],
           action: 'Pulsar nota',
           label: 'Tecla ' + ROMAN_KEYS[i],
           cursor: 'interact',
@@ -1250,18 +1261,28 @@
         });
       }
 
-      // Focus hitbox in 'desk' view -> zoom to 'chime'
-      const chimeFocusHit = new THREE.Mesh(
-        new THREE.BoxGeometry(0.50, 0.34, 0.36),
+      // Focus hitbox in 'desk' / 'desk_top' -> zoom to 'chime' (leaves front keys unobstructed in 'desk_top'!)
+      const chimeFocusGroup = new THREE.Group();
+      cb.add(chimeFocusGroup);
+
+      const chimeRearHit = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.31, 0.18),
         new THREE.MeshBasicMaterial({ visible: false })
       );
-      chimeFocusHit.position.set(0, 0.17, 0);
-      cb.add(chimeFocusHit);
+      chimeRearHit.position.set(0, 0.16, -0.08);
+      chimeFocusGroup.add(chimeRearHit);
 
-      SR.registerInteractive(chimeFocusHit, {
+      const chimeBaseHit = new THREE.Mesh(
+        new THREE.BoxGeometry(0.49, 0.092, 0.34),
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      chimeBaseHit.position.set(0, 0.046, 0);
+      chimeFocusGroup.add(chimeBaseHit);
+
+      SR.registerInteractive(chimeFocusGroup, {
         id: 'desk_chime_focus',
         station: 'desk',
-        activeViews: ['desk'],
+        activeViews: ['desk', 'desk_top'],
         action: 'Acercar',
         label: 'Caja de Resonancia (5 Notas)',
         cursor: 'inspect',
@@ -1327,7 +1348,7 @@
       const diskCfg = {
         id: 'desk_pickup_cipher_disk',
         station: 'desk',
-        activeViews: ['desk'],
+        activeViews: ['desk', 'desk_top'],
         action: 'Recoger',
         label: 'Disco Móvil de Latón',
         cursor: 'interact',
@@ -1363,7 +1384,7 @@
       const noteCfg = {
         id: 'desk_cipher_note',
         station: 'desk',
-        activeViews: ['desk'],
+        activeViews: ['desk', 'desk_top'],
         action: 'Leer Nota',
         label: 'Nota Cifrada de Valerio',
         cursor: 'inspect',

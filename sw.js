@@ -3,7 +3,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_NAME = 'eclipse-3d-v3';
+const CACHE_NAME = 'eclipse-3d-v4';
 
 const PRECACHE_ASSETS = [
   './index.html',

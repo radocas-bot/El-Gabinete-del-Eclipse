@@ -132,7 +132,9 @@
       fov: cfg.fov || 50,
       title: cfg.title || '',
       subtitle: cfg.subtitle || '',
-      parent: cfg.parent !== undefined ? cfg.parent : (viewId === 'room' ? null : 'room')
+      parent: cfg.parent !== undefined ? cfg.parent : (viewId === 'room' ? null : 'room'),
+      zenithView: cfg.zenithView || null,
+      perspectiveView: cfg.perspectiveView || null
     };
   }
 
@@ -541,7 +543,9 @@
           pos: v.pos ? v.pos.toArray().map(function (n) { return +n.toFixed(3); }) : null,
           target: v.target ? v.target.toArray().map(function (n) { return +n.toFixed(3); }) : null,
           fov: v.fov,
-          parent: v.parent
+          parent: v.parent,
+          zenithView: v.zenithView || null,
+          perspectiveView: v.perspectiveView || null
         };
       });
       return out;

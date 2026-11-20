@@ -479,7 +479,20 @@
         fov: 48,
         title: 'El Gran Planetario Mecánico',
         subtitle: 'Alinea Mercurio, Venus, Marte y Saturno en el bisel zodiacal',
-        parent: 'room'
+        parent: 'room',
+        zenithView: 'orrery_top'
+      });
+
+      // Pure vertical top-down / cenital view directly above the Orrery (tiny +0.14m Z offset avoids gimbal lock;
+      // Y=3.24 + fov=50 frames ALL 8 zodiac medallions including ♈ N & ♎ S AND front clutch socket clear of HUD!)
+      SR.Camera.registerView('orrery_top', {
+        pos: [0, 3.24, 0.18],
+        target: [0, 0.96, 0.04],
+        fov: 50,
+        title: 'Planetario — Vista Cenital',
+        subtitle: 'Alinea Mercurio, Venus, Marte y Saturno desde arriba',
+        parent: 'room',
+        perspectiveView: 'orrery'
       });
 
       // Tight stepped room-view hitbox hugging ONLY the physical pedestal + central bud
@@ -720,7 +733,7 @@
         const cfg = SR.registerInteractive(hit, {
           id: 'orrery_ring_' + def.key,
           station: 'orrery',
-          activeViews: ['orrery'],
+          activeViews: ['orrery', 'orrery_top'],
           action: 'Girar',
           label: `${def.name} (${def.glyph}) — ${SECTORS[initSec].glyph} ${SECTORS[initSec].dir}`,
           cursor: 'interact',
@@ -798,7 +811,7 @@
       this.clutchCfg = SR.registerInteractive(hit, {
         id: 'orrery_clutch',
         station: 'orrery',
-        activeViews: ['orrery'],
+        activeViews: ['orrery', 'orrery_top'],
         action: 'Desbloquear',
         label: 'Embrague del Planetario (Bloqueado)',
         cursor: 'interact',
@@ -936,7 +949,7 @@
       this.prismCfg = SR.registerInteractive(prismHit, {
         id: 'orrery_pickup_umbral_prism',
         station: 'orrery',
-        activeViews: ['orrery'],
+        activeViews: ['orrery', 'orrery_top'],
         action: 'Recoger',
         label: 'Prisma Umbral (Reliquia 3/3)',
         cursor: 'interact',

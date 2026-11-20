@@ -237,6 +237,13 @@ button,
   box-shadow: 0 0 18px rgba(103, 216, 255, 0.45);
 }
 
+.brass-btn.zenith-btn.active {
+  background: linear-gradient(180deg, rgba(154, 112, 38, 0.95), rgba(86, 58, 18, 0.96));
+  border-color: var(--brass-bright);
+  color: #fff6de;
+  box-shadow: 0 0 18px rgba(240, 202, 120, 0.48), inset 0 1px 0 rgba(255, 245, 210, 0.45);
+}
+
 .brass-cta {
   cursor: pointer;
   height: 48px;
@@ -1154,12 +1161,14 @@ button,
     padding: 0 10px;
     justify-content: center;
   }
-  #btn-back .label {
+  #btn-back .label,
+  #btn-zenith .label {
     display: none;
   }
-  #btn-back {
+  #btn-back,
+  #btn-zenith {
     min-width: 38px;
-    padding: 0 11px;
+    padding: 0 10px;
     justify-content: center;
     font-size: 16px;
   }
@@ -1336,6 +1345,27 @@ button,
 
 /* ---------- Narrow Portrait Phones: Compact 2-Row Equipped Banner & Clear Dialogue ---------- */
 @media (max-width: 600px) {
+  .hud-top-left,
+  .hud-top-right {
+    gap: 4px;
+  }
+  .hud-top-right .brass-btn,
+  #btn-back,
+  #btn-zenith {
+    min-width: 35px;
+    padding: 0 8px;
+  }
+  .brass-btn.icon-only {
+    width: 35px;
+  }
+  .timer-pill {
+    padding: 0 7px;
+    font-size: 11.5px;
+  }
+  .relic-pill {
+    padding: 0 7px;
+    gap: 4px;
+  }
   .equipped-banner {
     border-radius: 14px;
     padding: 5px 12px;
@@ -1393,11 +1423,13 @@ button,
     width: 34px;
   }
   .hud-top-right .brass-btn .label,
-  #btn-back .label {
+  #btn-back .label,
+  #btn-zenith .label {
     display: none;
   }
   .hud-top-right .brass-btn,
-  #btn-back {
+  #btn-back,
+  #btn-zenith {
     min-width: 36px;
     justify-content: center;
   }

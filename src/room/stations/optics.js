@@ -13,9 +13,9 @@
   const BEAM_Y = TABLE_TOP_Y + 0.095;
 
   const BEAM_COLORS = {
-    gold: { core: 0xfff0b3, glow: 0xffc947, light: 0xffc84a },
-    red:  { core: 0xffa8b0, glow: 0xff2942, light: 0xff334b },
-    blue: { core: 0xb5e4ff, glow: 0x2c9bff, light: 0x3ea8ff }
+    gold: { core: 0xfff8cc, mid: 0xffd24d, glow: 0xffa818, light: 0xffc84a },
+    red:  { core: 0xffd2d8, mid: 0xff334b, glow: 0xff0d2e, light: 0xff334b },
+    blue: { core: 0xd8f5ff, mid: 0x3ebaff, glow: 0x0a84ff, light: 0x3ea8ff }
   };
 
   // Exact 5x5 layout matching SR.State.data.opticsNodes
@@ -497,7 +497,21 @@
         fov: 50,
         title: 'Mesa de Óptica y Prismas',
         subtitle: 'Orienta espejos y divisores para activar los tres receptores de cristal',
-        parent: 'room'
+        parent: 'room',
+        zenithView: 'optics_top'
+      });
+
+      // Nearly pure vertical top-down / cenital view (tiny +0.06m Z offset prevents gimbal lock
+      // and keeps row 0 / Amber at top, Emitter at left, Ruby mid-right, Sapphire bottom-mid,
+      // and the open secret drawer cleanly above the bottom inventory bar!)
+      SR.Camera.registerView('optics_top', {
+        pos: localToWorldArr(group, 0.04, 2.98, 0.77),
+        target: localToWorldArr(group, 0.04, TABLE_TOP_Y + 0.06, 0.71),
+        fov: 48,
+        title: 'Mesa de Óptica — Vista Cenital',
+        subtitle: 'Alinea espejos y divisores desde arriba para activar los tres receptores',
+        parent: 'room',
+        perspectiveView: 'optics'
       });
 
       SR.Camera.registerView('starmap', {
@@ -699,7 +713,7 @@
       SR.registerInteractive(zoomHit, {
         id: 'optics_starmap_zoom',
         station: 'optics',
-        activeViews: ['room', 'optics'],
+        activeViews: ['room', 'optics', 'optics_top'],
         action: 'Examinar',
         label: 'Carta Estelar de Solís',
         cursor: 'inspect',
@@ -861,7 +875,7 @@
       this.lanternCfg = SR.registerInteractive(hit, {
         id: 'optics_uv_lantern',
         station: 'optics',
-        activeViews: ['optics', 'starmap'],
+        activeViews: ['optics', 'optics_top', 'starmap'],
         action: 'Examinar',
         label: 'Linterna de Cobalto (Sin lente)',
         cursor: 'interact',
@@ -1124,10 +1138,29 @@
           glassB.position.set(0, 0.068, -0.010);
           turret.add(glassB);
 
-          // Clear brass top ridge bar so angle is readable from elevated 3/4 view
-          const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.124, 0.014, 0.022), mats.brass);
+          // Clear dark-beveled brass ridge + crisp luminous silver top-edge indicator strip
+          // so exact mirror orientation (-, /, |, \) is unmistakable from straight top-down AND perspective!
+          const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.128, 0.014, 0.024), mats.darkIron);
           ridge.position.y = 0.124;
           turret.add(ridge);
+
+          const topEdgeMat = new THREE.MeshStandardMaterial({
+            color: 0xf4f8ff,
+            emissive: 0x9ec5e8,
+            emissiveIntensity: 0.68,
+            roughness: 0.18,
+            metalness: 0.72
+          });
+          const topEdgeStrip = new THREE.Mesh(new THREE.BoxGeometry(0.124, 0.007, 0.011), topEdgeMat);
+          topEdgeStrip.position.y = 0.133;
+          turret.add(topEdgeStrip);
+
+          // Small brass end-caps on mirror bar to accentuate orientation cleanly from above
+          [-0.064, 0.064].forEach(ex => {
+            const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.010, 0.010, 0.020, 8), mats.gold);
+            cap.position.set(ex, 0.126, 0);
+            turret.add(cap);
+          });
 
           highlightMesh = frame;
         } else {
@@ -1144,9 +1177,21 @@
           postR.position.x = 0.056;
           turret.add(postR);
 
-          const topBar = new THREE.Mesh(new THREE.BoxGeometry(0.124, 0.014, 0.020), mats.gold);
+          const topBar = new THREE.Mesh(new THREE.BoxGeometry(0.126, 0.014, 0.022), mats.gold);
           topBar.position.y = 0.128;
           turret.add(topBar);
+
+          // Luminous cyan top-edge indicator strip distinguishing Splitters from Mirrors even in cenital view!
+          const splitEdgeMat = new THREE.MeshStandardMaterial({
+            color: 0xd0fbff,
+            emissive: 0x4ce2ff,
+            emissiveIntensity: 1.15,
+            roughness: 0.12,
+            metalness: 0.25
+          });
+          const splitTopStrip = new THREE.Mesh(new THREE.BoxGeometry(0.122, 0.008, 0.012), splitEdgeMat);
+          splitTopStrip.position.y = 0.137;
+          turret.add(splitTopStrip);
 
           const quartzMat = new THREE.MeshStandardMaterial({
             color: 0xd8f6ff,
@@ -1201,7 +1246,7 @@
         const cfg = SR.registerInteractive(hit, {
           id: 'optics_' + def.key,
           station: 'optics',
-          activeViews: ['optics'],
+          activeViews: ['optics', 'optics_top'],
           action: def.type === 'socket' ? 'Colocar' : 'Girar',
           label: def.name,
           cursor: 'interact',
@@ -1284,7 +1329,7 @@
       this.crankCfg = SR.registerInteractive(crankHit, {
         id: 'optics_pickup_orrery_crank',
         station: 'optics',
-        activeViews: ['optics'],
+        activeViews: ['optics', 'optics_top'],
         action: 'Recoger',
         label: 'Manivela Astral',
         cursor: 'interact',
@@ -1539,22 +1584,37 @@
         const mx = (seg.x1 + seg.x2) * 0.5;
         const mz = (seg.z1 + seg.z2) * 0.5;
 
-        // Bright blazing inner core
+        // 1. Bright blazing inner core cylinder (unmistakable in both perspective and cenital views)
         const coreMesh = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.0055, 0.0055, len, 8),
+          new THREE.CylinderGeometry(0.0085, 0.0085, len, 10),
           new THREE.MeshBasicMaterial({ color: c.core })
         );
         coreMesh.position.set(mx, BEAM_Y, mz);
         coreMesh.quaternion.copy(quat);
         this.beamGroup.add(coreMesh);
 
-        // Soft additive outer glow cylinder
-        const glowMesh = new THREE.Mesh(
+        // 2. Vivid saturated inner plasma sheath
+        const midMesh = new THREE.Mesh(
           new THREE.CylinderGeometry(0.0155, 0.0155, len, 10),
+          new THREE.MeshBasicMaterial({
+            color: c.mid || c.glow,
+            transparent: true,
+            opacity: 0.78,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          })
+        );
+        midMesh.position.set(mx, BEAM_Y, mz);
+        midMesh.quaternion.copy(quat);
+        this.beamGroup.add(midMesh);
+
+        // 3. Soft wide outer additive halo sheath
+        const glowMesh = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.026, 0.026, len, 10),
           new THREE.MeshBasicMaterial({
             color: c.glow,
             transparent: true,
-            opacity: 0.44,
+            opacity: 0.30,
             blending: THREE.AdditiveBlending,
             depthWrite: false
           })
@@ -1566,19 +1626,34 @@
 
       sparks.forEach(sp => {
         const c = BEAM_COLORS[sp.color] || BEAM_COLORS.gold;
-        const r = sp.small ? 0.012 : 0.019;
+        const r = sp.small ? 0.016 : 0.024;
         const spark = new THREE.Mesh(
-          new THREE.SphereGeometry(r, 10, 10),
+          new THREE.SphereGeometry(r, 12, 10),
           new THREE.MeshBasicMaterial({
-            color: sp.small ? c.glow : c.core,
+            color: sp.small ? (c.mid || c.glow) : c.core,
             transparent: true,
-            opacity: sp.small ? 0.65 : 0.92,
+            opacity: sp.small ? 0.80 : 0.96,
             blending: THREE.AdditiveBlending,
             depthWrite: false
           })
         );
         spark.position.set(sp.x, BEAM_Y, sp.z);
         this.beamGroup.add(spark);
+
+        if (!sp.small) {
+          const halo = new THREE.Mesh(
+            new THREE.SphereGeometry(0.040, 12, 10),
+            new THREE.MeshBasicMaterial({
+              color: c.glow,
+              transparent: true,
+              opacity: 0.36,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false
+            })
+          );
+          halo.position.set(sp.x, BEAM_Y, sp.z);
+          this.beamGroup.add(halo);
+        }
       });
 
       // Update receptor states & visuals

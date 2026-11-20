@@ -106,7 +106,7 @@
       list.push({
         id: 'telescope_pickup',
         title: 'Catalejo del Escritorio',
-        views: ['desk'],
+        views: ['desk', 'desk_top'],
         tiers: [
           'Revisa con atención los objetos sobre el Escritorio del Maestro (Este); hay un instrumento de latón que puedes recoger.',
           'Recoge el Catalejo de Latón sobre el tapete verde del escritorio. Su descripción menciona que el ocular trasero tiene una rosca suelta.',
@@ -117,7 +117,7 @@
       list.push({
         id: 'telescope_b1a',
         title: 'Inspección 3D del Catalejo',
-        views: ['desk', 'chime'],
+        views: ['desk', 'desk_top', 'chime'],
         tiers: [
           'El Catalejo de Latón en tu inventario oculta un secreto en su extremo trasero. Examínalo de cerca en el Inspector 3D.',
           'Haz doble clic o clic derecho sobre el Catalejo en la barra de inventario (o selecciónalo y pulsa "🔍 Inspeccionar 3D"). Arrastra para rotarlo y observa el anillo brillante del ocular.',
@@ -131,7 +131,7 @@
       list.push({
         id: 'chime_b1b',
         title: 'Caja de Resonancia del Escritorio',
-        views: ['chime', 'desk'],
+        views: ['chime', 'desk', 'desk_top'],
         tiers: [
           'En el Escritorio del Maestro hay una Caja de Resonancia con cinco teclas metálicas numeradas del I al V.',
           'La inscripción grabada en el tubo interior del Catalejo (también registrada en tu Diario) muestra el orden exacto de las cinco notas.',
@@ -142,7 +142,7 @@
       list.push({
         id: 'chime_collect',
         title: 'Cajón Secreto del Escritorio',
-        views: ['desk', 'chime'],
+        views: ['desk', 'desk_top', 'chime'],
         tiers: [
           'El cajón secreto central del Escritorio del Maestro está abierto.',
           'Examina el interior del cajón central para recoger un disco de latón y leer la nota cifrada de Valerio.',
@@ -235,7 +235,7 @@
       list.push({
         id: 'uv_c1',
         title: 'Linterna de Cobalto (UV)',
-        views: ['optics', 'starmap'],
+        views: ['optics', 'optics_top', 'starmap'],
         tiers: [
           'El Filtro de Cobalto que hallaste dentro del catalejo encaja en una lámpara de laboratorio. Explora la Mesa de Óptica (Sur).',
           'En la esquina izquierda de la Mesa de Óptica hay una Linterna de Cobalto con su aro frontal vacío. Equipa el Filtro de Cobalto y colócalo allí.',
@@ -249,7 +249,7 @@
       list.push({
         id: 'optics_c2',
         title: 'Mesa de Óptica y Prismas',
-        views: ['optics'],
+        views: ['optics', 'optics_top'],
         tiers: [
           'En la Mesa de Óptica (Sur) debes iluminar simultáneamente los tres receptores de cristal con su color exacto: Ámbar (oro), Rubí (rojo) y Zafiro (azul). Necesitarás instalar el Cristal Divisor.',
           'Coloca el Cristal Divisor en el zócalo vacío del centro de la cuadrícula. El primer divisor reparte el rayo hacia arriba (hacia el receptor Ámbar usando tres espejos en "/") y hacia el segundo divisor; éste deja pasar un rayo recto por el filtro Rubí y refleja otro hacia abajo, rodeando hasta el filtro y receptor Zafiro.',
@@ -260,7 +260,7 @@
       list.push({
         id: 'optics_collect',
         title: 'Cajón de la Mesa de Óptica',
-        views: ['optics'],
+        views: ['optics', 'optics_top'],
         tiers: [
           'Los tres receptores han activado el cajón oculto en el frente de la Mesa de Óptica.',
           'Mira en la parte delantera de la Mesa de Óptica para recoger la llave mecánica del Planetario.',
@@ -274,7 +274,7 @@
       list.push({
         id: 'uv_starmap_clue',
         title: 'Carta Estelar Ultravioleta',
-        views: ['starmap', 'optics', 'orrery'],
+        views: ['starmap', 'optics', 'optics_top', 'orrery', 'orrery_top'],
         tiers: [
           'La Linterna UV revela inscripciones fosforescentes invisibles a simple vista. Activa la Luz UV desde la barra superior y revisa la pared tras la Mesa de Óptica.',
           'Con el botón "✦ Luz UV" encendido, acércate a la Carta Estelar enmarcada detrás de la Mesa de Óptica para ver las coordenadas luminosas.',
@@ -288,7 +288,7 @@
       list.push({
         id: 'orrery_c3',
         title: 'El Gran Planetario Mecánico',
-        views: ['orrery'],
+        views: ['orrery', 'orrery_top'],
         tiers: [
           'Acércate al Gran Planetario en el centro de la sala. Primero debes liberar su embrague frontal con la Manivela Astral y luego alinear los cuatro planetas siguiendo la Carta Estelar UV.',
           'Inserta la Manivela Astral en el embrague del pedestal. En el dial de 8 sectores (45° cada paso en sentido horario): Mercurio (☿) va al Norte ♈; Venus (♀) +90° horario desde ☿ (Este ♋); Marte (♂) opuesto a ♀ (Oeste ♑); y Saturno (♄) −45° antihorario desde ♂ (Suroeste ♐).',
@@ -299,7 +299,7 @@
       list.push({
         id: 'orrery_collect',
         title: 'Núcleo del Gran Planetario',
-        views: ['orrery'],
+        views: ['orrery', 'orrery_top'],
         tiers: [
           'Los pétalos dorados del Sol central del Planetario han florecido.',
           'Observa el cristal oscuro que levita en el centro del Gran Planetario.',
