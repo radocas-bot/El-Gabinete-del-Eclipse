@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#120e16" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Eclipse 3D" />
+  <title>El Gabinete del Eclipse — Escape Room 3D</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 3D Viewport Container -->
+  <div id="viewport-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="uv-vignette" class="uv-vignette" aria-hidden="true"></div>
+    <div id="flash-overlay" class="flash-overlay" aria-hidden="true"></div>
+  </div>
+
+  <!-- Custom Tooltip following cursor -->
+  <div id="cursor-tooltip" class="cursor-tooltip hidden" aria-hidden="true">
+    <span class="tooltip-action"></span>
+    <span class="tooltip-label"></span>
+  </div>
+
+  <!-- In-Game HUD -->
+  <div id="hud" class="hud hidden">
+    <!-- Top Bar: Back Button, Station Compass, Utility Controls -->
+    <header class="hud-top">
+      <div class="hud-top-left">
+        <button id="btn-back" class="brass-btn hidden" title="Volver atrás (Rueda atrás / Clic derecho)">
+          <span class="icon">←</span>
+          <span class="label">Volver</span>
+        </button>
+        <div id="timer-badge" class="brass-pill timer-pill" title="Tiempo transcurrido">
+          <span class="pill-icon">◷</span>
+          <span id="timer-display">00:00</span>
+        </div>
+        <div id="relic-counter" class="brass-pill relic-pill" title="Reliquias colocadas en la Puerta del Eclipse">
+          <span class="relic-dot" data-relic="solar_gear" title="Engranaje Solar">☀</span>
+          <span class="relic-dot" data-relic="lunar_lens" title="Lente Lunar">☽</span>
+          <span class="relic-dot" data-relic="umbral_prism" title="Prisma Umbral">◈</span>
+        </div>
+      </div>
+
+      <!-- Quick Station Navigation Compass -->
+      <nav id="station-compass" class="station-compass" aria-label="Navegación rápida">
+        <button class="compass-btn" data-station="door">Puerta</button>
+        <button class="compass-btn" data-station="clockBooks">Reloj y Libros</button>
+        <button class="compass-btn" data-station="desk">Escritorio</button>
+        <button class="compass-btn" data-station="optics">Óptica</button>
+        <button class="compass-btn" data-station="telemetry">Telemetría</button>
+        <button class="compass-btn" data-station="orrery">Planetario</button>
+        <button class="compass-btn" data-station="dome">Cúpula</button>
+      </nav>
+
+      <div class="hud-top-right">
+        <button id="btn-uv" class="brass-btn uv-btn hidden" title="Alternar Linterna Ultravioleta">
+          <span class="icon">✦</span>
+          <span class="label">Luz UV</span>
+        </button>
+        <button id="btn-journal" class="brass-btn" title="Cuaderno de Notas">
+          <span class="icon">📖</span>
+          <span class="label">Diario</span>
+          <span id="journal-badge" class="notif-dot hidden"></span>
+        </button>
+        <button id="btn-hint" class="brass-btn" title="Solicitar Pista">
+          <span class="icon">✧</span>
+          <span class="label">Pista</span>
+        </button>
+        <button id="btn-settings" class="brass-btn icon-only" title="Opciones y Sonido">
+          <span class="icon">⚙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Edge Turn Arrows for Effortless One-Click Mouse Panning -->
+    <button id="btn-turn-left" class="edge-arrow edge-arrow-left" title="Girar vista a la izquierda">
+      <span>‹</span>
+    </button>
+    <button id="btn-turn-right" class="edge-arrow edge-arrow-right" title="Girar vista a la derecha">
+      <span>›</span>
+    </button>
+
+    <!-- Station Contextual Sub-Action Bar (for ergonomic fine control when zoomed in) -->
+    <div id="station-banner" class="station-banner hidden">
+      <div id="station-title" class="station-title"></div>
+      <div id="station-subtitle" class="station-subtitle"></div>
+    </div>
+
+    <!-- Subtle Diegetic Subtitle / Inner Monologue Box -->
+    <div id="dialogue-box" class="dialogue-box hidden" role="status" aria-live="polite">
+      <p id="dialogue-text"></p>
+    </div>
+
+    <!-- Bottom Inventory Dock -->
+    <footer class="hud-bottom">
+      <div id="equipped-banner" class="equipped-banner hidden">
+        <span id="equipped-text"></span>
+        <button id="btn-inspect-equipped" class="mini-brass-btn">🔍 Inspeccionar 3D</button>
+        <button id="btn-unequip" class="mini-brass-btn subtle">✕ Soltar</button>
+      </div>
+      <div id="inventory-bar" class="inventory-bar" aria-label="Inventario">
+        <div class="inventory-empty-msg">Inventario vacío — Explora el gabinete con el ratón</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 3D Object Inspector Modal -->
+  <div id="inspector-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-frame inspector-frame">
+      <div class="modal-header">
+        <div>
+          <h2 id="inspector-title">Inspección de Objeto</h2>
+          <p id="inspector-subtitle" class="modal-sub">Arrastra con el ratón para rotar 360° • Haz clic en detalles sospechosos</p>
+        </div>
+        <button id="btn-close-inspector" class="modal-close" title="Cerrar">✕</button>
+      </div>
+      <div class="inspector-stage">
+        <canvas id="inspector-canvas"></canvas>
+        <div id="inspector-hint-tag" class="inspector-hint-tag hidden"></div>
+      </div>
+      <div class="inspector-footer">
+        <p id="inspector-desc"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Journal & Document Reader Modal -->
+  <div id="journal-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-frame journal-frame">
+      <div class="modal-header">
+        <div>
+          <h2>Cuaderno de Valerio de Solís</h2>
+          <p class="modal-sub">Pistas registradas y documentos hallados en el gabinete</p>
+        </div>
+        <button id="btn-close-journal" class="modal-close" title="Cerrar">✕</button>
+      </div>
+      <div class="journal-body">
+        <aside id="journal-tabs" class="journal-tabs"></aside>
+        <article id="journal-content" class="journal-content"></article>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div id="hint-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-frame hint-frame">
+      <div class="modal-header">
+        <div>
+          <h2>Brújula de Indicios</h2>
+          <p class="modal-sub">Pistas graduales adaptadas a tu progreso actual</p>
+        </div>
+        <button id="btn-close-hint" class="modal-close" title="Cerrar">✕</button>
+      </div>
+      <div id="hint-body" class="hint-body"></div>
+      <div class="hint-footer">
+        <span id="hint-count-label">Pistas reveladas: 0</span>
+        <button id="btn-reveal-next-hint" class="brass-cta small">Revelar siguiente nivel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-frame settings-frame">
+      <div class="modal-header">
+        <div>
+          <h2>Opciones del Gabinete</h2>
+          <p class="modal-sub">Audio, gráficos y controles de ratón</p>
+        </div>
+        <button id="btn-close-settings" class="modal-close" title="Cerrar">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="setting-row">
+          <label for="opt-volume">Volumen general</label>
+          <input id="opt-volume" type="range" min="0" max="100" value="75" />
+        </div>
+        <div class="setting-row">
+          <label for="opt-mute">Silenciar audio</label>
+          <input id="opt-mute" type="checkbox" />
+        </div>
+        <div class="setting-row">
+          <label for="opt-bloom">Resplandor cinematográfico (Bloom)</label>
+          <input id="opt-bloom" type="checkbox" checked />
+        </div>
+        <div class="setting-row">
+          <label for="opt-shadows">Sombras en tiempo real</label>
+          <input id="opt-shadows" type="checkbox" checked />
+        </div>
+        <div class="controls-card">
+          <h3>Controles (Ratón y Táctil)</h3>
+          <ul>
+            <li><strong>Clic izquierdo:</strong> Examinar zonas, pulsar mecanismos, recoger y usar objetos.</li>
+            <li><strong>Arrastrar (botón izq.):</strong> Girar la cámara 360° en la habitación o rotar objetos en el Inspector 3D.</li>
+            <li data-control="wheel"><strong>Rueda del ratón:</strong> Rueda arriba: acercar zoom • Rueda abajo: alejar / salir del zoom.</li>
+            <li><strong>Clic derecho:</strong> Alejar la cámara / volver atrás o soltar el objeto equipado.</li>
+            <li data-control="touch"><strong>Táctil (móvil):</strong> Arrastra con un dedo para mirar 360°, toca para interactuar y pellizca con dos dedos para hacer zoom o salir.</li>
+            <li><strong>Barra superior:</strong> Navegación rápida entre estaciones y acceso al Diario y Pistas.</li>
+          </ul>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-restart-from-settings" class="brass-btn danger">Reiniciar Partida</button>
+          <button id="btn-install-pwa-settings" class="brass-btn pwa-install-btn hidden">📲 Instalar App</button>
+          <button id="btn-resume-settings" class="brass-cta small">Continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Title Screen Overlay (Live 3D Room renders behind!) -->
+  <div id="title-screen" class="screen-overlay">
+    <div class="title-card">
+      <div class="title-ornament">✦ &nbsp; OBSERVATORIO DE SOLÍS • 1894 &nbsp; ✦</div>
+      <h1 class="game-title">El Gabinete<br/><span>del Eclipse</span></h1>
+      <p class="title-tagline">
+        El maestro relojero Valerio de Solís desapareció la noche del Gran Eclipse.<br/>
+        La puerta acorazada sólo obedece a sus tres reliquias celestiales.<br/>
+        Observa, deduce y manipula cada mecanismo con el ratón o la pantalla táctil.
+      </p>
+      <div class="title-buttons">
+        <button id="btn-start-new" class="brass-cta">Entrar al Gabinete</button>
+        <button id="btn-continue" class="brass-btn large hidden">Continuar Partida</button>
+        <button id="btn-install-pwa" class="brass-btn large pwa-install-btn hidden">📲 Instalar App</button>
+      </div>
+      <div class="title-meta">
+        <span>Habitación Única 3D</span>
+        <span>•</span>
+        <span>10 Puzzles Interconectados</span>
+        <span>•</span>
+        <span>Dificultad Media-Alta</span>
+        <span>•</span>
+        <span>Point &amp; Click</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Screen Overlay -->
+  <div id="victory-screen" class="screen-overlay hidden">
+    <div class="title-card victory-card">
+      <div class="title-ornament">✦ &nbsp; ECLIPSE TOTAL CONSUMADO &nbsp; ✦</div>
+      <h1 class="game-title">¡Has Escapado<br/><span>del Gabinete!</span></h1>
+      <p class="title-tagline">
+        Los tres sellos celestiales se alinearon en el cenit y la bóveda de Maestro Valerio cedió ante tu ingenio.
+        La luz de la madrugada ilumina por fin el observatorio.
+      </p>
+      <div class="victory-stats">
+        <div class="stat-box">
+          <span class="stat-label">Tiempo</span>
+          <span id="stat-time" class="stat-value">00:00</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Pistas usadas</span>
+          <span id="stat-hints" class="stat-value">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Rango Horólogo</span>
+          <span id="stat-rank" class="stat-value">Gran Maestro</span>
+        </div>
+      </div>
+      <div class="title-buttons">
+        <button id="btn-play-again" class="brass-cta">Jugar de Nuevo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Self-contained Offline Three.js r170 + Postprocessing Bundle -->
+  <script src="vendor/three-bundle.js"></script>
+
+  <!-- Core Modules -->
+  <script src="src/core/state.js"></script>
+  <script src="src/core/audio.js"></script>
+  <script src="src/core/textures.js"></script>
+  <script src="src/core/materials.js"></script>
+  <script src="src/core/camera.js"></script>
+
+  <!-- Room Architecture & Props -->
+  <script src="src/room/architecture.js"></script>
+  <script src="src/room/props.js"></script>
+
+  <!-- Interactive 3D Puzzle Stations -->
+  <script src="src/room/stations/door.js"></script>
+  <script src="src/room/stations/clockBooks.js"></script>
+  <script src="src/room/stations/desk.js"></script>
+  <script src="src/room/stations/optics.js"></script>
+  <script src="src/room/stations/telemetry.js"></script>
+  <script src="src/room/stations/orrery.js"></script>
+
+  <!-- UI Systems -->
+  <script src="src/ui/hints.js"></script>
+  <script src="src/ui/journal.js"></script>
+  <script src="src/ui/inspector.js"></script>
+  <script src="src/ui/hud.js"></script>
+  <script src="src/ui/screens.js"></script>
+
+  <!-- Main Bootstrap -->
+  <script src="src/main.js"></script>
+</body>
+</html>
