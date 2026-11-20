@@ -37,7 +37,7 @@ Haz doble clic directamente sobre **`index.html`**. Todo el motor 3D, las textur
 
 ## Instalar como App (PWA Offline)
 
-El juego incluye `manifest.webmanifest`, iconos vectorizados y Service Worker offline (`sw.js`):
+El juego incluye `manifest.json` (con respaldo `manifest.webmanifest`), iconos vectorizados y Service Worker offline (`sw.js`):
 
 - **PC (Chrome / Edge):** abre el juego mediante `server.py` (o HTTPS) y pulsa **📲 Instalar App** en la pantalla de título o el icono de instalación en la barra de direcciones.
 - **Android (Chrome):** abre la URL Wi-Fi o HTTPS y pulsa **📲 Instalar App** (o menú `⋮` → *Instalar aplicación* / *Añadir a pantalla de inicio*). Nota: la instalación completa en Android requiere HTTPS o `localhost`.
@@ -86,7 +86,7 @@ El juego incluye `manifest.webmanifest`, iconos vectorizados y Service Worker of
 SCAPE_ROOM/
 ├── index.html                  # Documento principal, meta PWA y scripts
 ├── styles.css                  # Interfaz victoriana responsive (PC y móvil)
-├── manifest.webmanifest        # Manifiesto PWA instalable
+├── manifest.json               # Manifiesto PWA instalable (compatible con todo hosting)
 ├── sw.js                       # Service Worker cache-first offline
 ├── server.py                   # Servidor local y Wi-Fi LAN (Python 3)
 ├── JUGAR.bat                   # Lanzador directo para Windows

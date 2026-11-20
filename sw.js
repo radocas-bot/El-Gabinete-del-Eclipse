@@ -1,14 +1,14 @@
 /* ==========================================================================
-   sw.js — Offline-First Service Worker for El Gabinete del Eclipse (PWA)
+   sw.js — Resilient Offline-First Service Worker for El Gabinete del Eclipse
    ========================================================================== */
 'use strict';
 
-const CACHE_NAME = 'eclipse-3d-v1';
+const CACHE_NAME = 'eclipse-3d-v2';
 
 const PRECACHE_ASSETS = [
-  './',
   './index.html',
   './styles.css',
+  './manifest.json',
   './manifest.webmanifest',
   './vendor/three-bundle.js',
   './src/core/state.js',
@@ -39,7 +39,14 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(PRECACHE_ASSETS);
+      // Cache each asset individually so a single redirect/host quirk never aborts SW install
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map(function (url) {
+          return cache.add(new Request(url, { cache: 'reload' })).catch(function () {
+            return cache.add(url).catch(function () { return null; });
+          });
+        })
+      );
     }).then(function () {
       return self.skipWaiting();
     })
@@ -80,7 +87,7 @@ self.addEventListener('fetch', function (event) {
           const clone = networkRes.clone();
           caches.open(CACHE_NAME).then(function (cache) {
             cache.put(req, clone);
-          });
+          }).catch(function () {});
         }
         return networkRes;
       }).catch(function () {

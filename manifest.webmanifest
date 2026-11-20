@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "El Gabinete del Eclipse — Escape Room 3D",
   "short_name": "Eclipse 3D",
   "description": "Escape room 3D victoriano-horológico offline en una sola habitación octogonal con 10 puzzles interconectados.",
@@ -7,6 +8,7 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "any",
   "background_color": "#08070a",
   "theme_color": "#120e16",
